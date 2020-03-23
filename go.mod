@@ -1,4 +1,4 @@
-module jjrumi.com/asteroids
+module github.com/jjrumi/asteroids
 
 go 1.14
 
