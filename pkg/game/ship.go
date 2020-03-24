@@ -1,59 +1,88 @@
 package game
 
 import (
-	"log"
+	"math"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 )
 
 const shipSize = 20
+const maxSpeed = 10
+const thrust = 0.2
 
 type Ship struct {
 	*imdraw.IMDraw
-	pos    pixel.Vec
-	points []pixel.Vec
-	radius float64
+	points   []pixel.Vec
+	pos      pixel.Vec
+	dir      pixel.Vec
+	velocity pixel.Vec
 }
 
 func NewShip(pos pixel.Vec) *Ship {
 	points := []pixel.Vec{
-		pixel.V(pos.X-shipSize, pos.Y-shipSize),
-		pixel.V(pos.X+shipSize, pos.Y-shipSize),
-		pixel.V(pos.X, pos.Y+shipSize+shipSize/2),
+		pixel.V(-shipSize, -shipSize),
+		pixel.V(shipSize, -shipSize),
+		pixel.V(0, shipSize),
+	}
+
+	newPoints := points[:0]
+	for _, point := range points {
+		newPoints = append(newPoints, pixel.IM.Moved(pos).Project(point))
 	}
 
 	return &Ship{
 		imdraw.New(nil),
+		newPoints,
 		pos,
-		points,
-		shipSize,
+		pixel.V(0, 1),
+		pixel.V(0, 0),
 	}
 }
 
-func (s *Ship) ReDraw() {
+func (s *Ship) Update() {
+	s.updatePosition()
+
 	s.Clear()
 	s.Reset()
 
-	s.Color = pixel.RGB(255, 255, 255)
-	s.Push(s.points...)
+	s.Color = pixel.RGB(1, 1, 1)
+	s.Push(s.points[0])
+	s.Push(s.points[1])
+	s.Color = pixel.RGB(1, 0, 0)
+	s.Push(s.points[2])
 	s.Polygon(1)
 }
 
-func (s *Ship) RotateLeft() {
-	log.Print("rotating left...")
-}
+func (s *Ship) Rotate(angle float64) {
+	s.dir = pixel.IM.
+		Rotated(pixel.ZV, angle).
+		Project(s.dir)
 
-func (s *Ship) RotateRight() {
-	log.Print("rotating right...")
-}
-
-func (s *Ship) Accelerate() {
-	log.Print("accelerating...")
-	s.pos = pixel.IM.Moved(pixel.V(0, 5)).Project(s.pos)
 	newPoints := s.points[:0]
 	for _, point := range s.points {
-		newPoints = append(newPoints, pixel.IM.Moved(pixel.V(0,5)).Project(point))
+		newP := pixel.IM.
+			Moved(pixel.V(-s.pos.X, -s.pos.Y)).
+			Rotated(pixel.ZV, angle).
+			Moved(s.pos).
+			Project(point)
+		newPoints = append(newPoints, newP)
 	}
-	s.points = newPoints
+}
+
+func (s *Ship) Thrust() {
+	s.velocity = pixel.V(
+		math.Min(maxSpeed, s.dir.X*thrust+s.velocity.X),
+		math.Min(maxSpeed, s.dir.Y*thrust+s.velocity.Y),
+	)
+}
+
+func (s *Ship) updatePosition() {
+	tm := pixel.IM.Moved(pixel.V(s.velocity.X, s.velocity.Y))
+	s.pos = tm.Project(s.pos)
+
+	newPoints := s.points[:0]
+	for _, point := range s.points {
+		newPoints = append(newPoints, tm.Project(point))
+	}
 }

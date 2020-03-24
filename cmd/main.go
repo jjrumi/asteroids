@@ -1,6 +1,8 @@
 package main
 
 import (
+	"math"
+
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
@@ -27,22 +29,19 @@ func run() {
 
 	ship := game.NewShip(pixel.V(WIDTH/2, HEIGHT/2))
 
-	// TODO:
-	// 2- Rotation: left & right arrows -> Apply Rotation matrix to ship points
-
 	for !win.Closed() {
 		if win.Pressed(pixelgl.KeyLeft) {
-			ship.RotateLeft()
+			ship.Rotate(math.Pi / 20)
 		}
 		if win.Pressed(pixelgl.KeyRight) {
-			ship.RotateRight()
+			ship.Rotate(-math.Pi / 20)
 		}
 		if win.Pressed(pixelgl.KeyUp) {
-			ship.Accelerate()
+			ship.Thrust()
 		}
 
 		win.Clear(colornames.Black)
-		ship.ReDraw()
+		ship.Update()
 		ship.Draw(win)
 		win.Update()
 	}
