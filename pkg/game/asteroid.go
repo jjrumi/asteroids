@@ -33,7 +33,9 @@ func NewAsteroid(pos pixel.Vec) *Asteroid {
 		points[int(i)] = pixel.V(relRadius*math.Cos(angle), relRadius*math.Sin(angle))
 	}
 
-	velocity := pixel.V(rd.Float64(), rd.Float64())
+	vX := -1 + rd.Float64() * (1 + 1)
+	vY := -1 + rd.Float64() * (1 + 1)
+	velocity := pixel.V(vX, vY)
 
 	asteroid := &Asteroid{
 		imdraw.New(nil),
