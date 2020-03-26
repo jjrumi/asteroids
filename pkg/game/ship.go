@@ -40,9 +40,40 @@ func NewShip(pos pixel.Vec) *Ship {
 	}
 }
 
-func (s *Ship) Update() {
-	s.updatePosition()
+func (s *Ship) Update(screenWidth int, screenHeight int) {
+	s.updatePosition(float64(screenWidth), float64(screenHeight))
+	s.redrawShip()
+}
 
+func (s *Ship) moveShipBy(v pixel.Vec) {
+	tm := pixel.IM.Moved(v)
+	s.pos = tm.Project(s.pos)
+
+	newPoints := s.points[:0]
+	for _, point := range s.points {
+		newPoints = append(newPoints, tm.Project(point))
+	}
+}
+
+func (s *Ship) updatePosition(screenWidth float64, screenHeight float64) {
+	s.moveShipBy(pixel.V(s.velocity.X, s.velocity.Y))
+
+	// go over the edge
+	if s.pos.Y > screenHeight+shipSize {
+		s.moveShipBy(pixel.V(0, -screenHeight-shipSize))
+	}
+	if s.pos.X > screenWidth+shipSize {
+		s.moveShipBy(pixel.V(-screenWidth-shipSize, 0))
+	}
+	if s.pos.Y < 0-shipSize {
+		s.moveShipBy(pixel.V(0, screenHeight+shipSize))
+	}
+	if s.pos.X < 0-shipSize {
+		s.moveShipBy(pixel.V(screenWidth+shipSize, 0))
+	}
+}
+
+func (s *Ship) redrawShip() {
 	s.Clear()
 	s.Reset()
 
@@ -75,14 +106,4 @@ func (s *Ship) Thrust() {
 		math.Min(maxSpeed, s.dir.X*thrust+s.velocity.X),
 		math.Min(maxSpeed, s.dir.Y*thrust+s.velocity.Y),
 	)
-}
-
-func (s *Ship) updatePosition() {
-	tm := pixel.IM.Moved(pixel.V(s.velocity.X, s.velocity.Y))
-	s.pos = tm.Project(s.pos)
-
-	newPoints := s.points[:0]
-	for _, point := range s.points {
-		newPoints = append(newPoints, tm.Project(point))
-	}
 }

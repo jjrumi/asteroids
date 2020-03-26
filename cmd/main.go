@@ -41,7 +41,7 @@ func run() {
 		}
 
 		win.Clear(colornames.Black)
-		ship.Update()
+		ship.Update(WIDTH, HEIGHT)
 		ship.Draw(win)
 		win.Update()
 	}
