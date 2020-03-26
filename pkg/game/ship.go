@@ -26,18 +26,17 @@ func NewShip(pos pixel.Vec) *Ship {
 		pixel.V(0, shipSize),
 	}
 
-	newPoints := points[:0]
-	for _, point := range points {
-		newPoints = append(newPoints, pixel.IM.Moved(pos).Project(point))
+	ship := &Ship{
+		imdraw.New(nil),
+		points,
+		pixel.ZV,
+		pixel.V(0, 1),
+		pixel.ZV,
 	}
 
-	return &Ship{
-		imdraw.New(nil),
-		newPoints,
-		pos,
-		pixel.V(0, 1),
-		pixel.V(0, 0),
-	}
+	ship.moveShipBy(pos)
+
+	return ship
 }
 
 func (s *Ship) Update(screenWidth int, screenHeight int) {
