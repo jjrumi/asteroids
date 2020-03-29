@@ -3,7 +3,6 @@ package game
 import (
 	"math"
 	"math/rand"
-	"time"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
@@ -21,20 +20,17 @@ type Asteroid struct {
 }
 
 func NewAsteroid(pos pixel.Vec) *Asteroid {
-	s1 := rand.NewSource(time.Now().UnixNano())
-	rd := rand.New(s1)
-
-	radius := (rd.Float64() * 10) + 10
+	radius := (rand.Float64() * 10) + 10
 	angle := float64(0)
 	points := make([]pixel.Vec, 10)
 	for i := float64(0); i < 10; i++ {
 		angle = (2 * math.Pi / 10) * i
-		relRadius := radius*rd.Float64() + maxRadius
+		relRadius := radius*rand.Float64() + maxRadius
 		points[int(i)] = pixel.V(relRadius*math.Cos(angle), relRadius*math.Sin(angle))
 	}
 
-	vX := -1 + rd.Float64() * (1 + 1)
-	vY := -1 + rd.Float64() * (1 + 1)
+	vX := -1 + rand.Float64()*(1+1)
+	vY := -1 + rand.Float64()*(1+1)
 	velocity := pixel.V(vX, vY)
 
 	asteroid := &Asteroid{
@@ -50,8 +46,8 @@ func NewAsteroid(pos pixel.Vec) *Asteroid {
 	return asteroid
 }
 
-func (s *Asteroid) Update(screenWidth int, screenHeight int) {
-	s.updatePosition(float64(screenWidth), float64(screenHeight))
+func (s *Asteroid) Update(winWidth float64, winHeight float64) {
+	s.updatePosition(winWidth, winHeight)
 	s.redrawAsteroid()
 }
 

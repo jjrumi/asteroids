@@ -8,7 +8,7 @@ import (
 )
 
 const shipSize = 20
-const maxSpeed = 10
+const maxSpeed = 8
 const thrust = 0.2
 
 type Ship struct {
@@ -39,11 +39,6 @@ func NewShip(pos pixel.Vec) *Ship {
 	return ship
 }
 
-func (s *Ship) Update(screenWidth int, screenHeight int) {
-	s.updatePosition(float64(screenWidth), float64(screenHeight))
-	s.redrawShip()
-}
-
 func (s *Ship) moveShipBy(v pixel.Vec) {
 	tm := pixel.IM.Moved(v)
 	s.pos = tm.Project(s.pos)
@@ -52,6 +47,11 @@ func (s *Ship) moveShipBy(v pixel.Vec) {
 	for _, point := range s.points {
 		newPoints = append(newPoints, tm.Project(point))
 	}
+}
+
+func (s *Ship) Update(winWidth float64, winHeight float64) {
+	s.updatePosition(winWidth, winHeight)
+	s.redrawShip()
 }
 
 func (s *Ship) updatePosition(screenWidth float64, screenHeight float64) {
