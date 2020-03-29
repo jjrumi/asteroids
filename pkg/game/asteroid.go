@@ -10,21 +10,18 @@ import (
 
 const minRadius = 10
 const maxRadius = 20
+const asteroidPoints = 10
 
 type Asteroid struct {
-	*imdraw.IMDraw
-	points   []pixel.Vec
-	pos      pixel.Vec
-	dir      pixel.Vec
-	velocity pixel.Vec
+	*Object
 }
 
 func NewAsteroid(pos pixel.Vec) *Asteroid {
-	radius := (rand.Float64() * 10) + 10
+	radius := (rand.Float64() * minRadius) + minRadius
 	angle := float64(0)
-	points := make([]pixel.Vec, 10)
-	for i := float64(0); i < 10; i++ {
-		angle = (2 * math.Pi / 10) * i
+	points := make([]pixel.Vec, asteroidPoints)
+	for i := float64(0); i < asteroidPoints; i++ {
+		angle = (2 * math.Pi / asteroidPoints) * i
 		relRadius := radius*rand.Float64() + maxRadius
 		points[int(i)] = pixel.V(relRadius*math.Cos(angle), relRadius*math.Sin(angle))
 	}
@@ -34,14 +31,17 @@ func NewAsteroid(pos pixel.Vec) *Asteroid {
 	velocity := pixel.V(vX, vY)
 
 	asteroid := &Asteroid{
-		imdraw.New(nil),
-		points,
-		pixel.ZV,
-		pixel.V(0, 1),
-		velocity,
+		Object: &Object{
+			IMDraw:       imdraw.New(nil),
+			points:       points,
+			heading:      math.Pi / 2,
+			position:     pixel.ZV,
+			velocity:     velocity,
+			acceleration: pixel.ZV,
+		},
 	}
 
-	asteroid.moveAsteroidBy(pos)
+	asteroid.moveBy(pos)
 
 	return asteroid
 }
@@ -51,34 +51,6 @@ func (s *Asteroid) Update(winWidth float64, winHeight float64) {
 	s.redrawAsteroid()
 }
 
-func (s *Asteroid) moveAsteroidBy(v pixel.Vec) {
-	tm := pixel.IM.Moved(v)
-	s.pos = tm.Project(s.pos)
-
-	newPoints := s.points[:0]
-	for _, point := range s.points {
-		newPoints = append(newPoints, tm.Project(point))
-	}
-}
-
-func (s *Asteroid) updatePosition(screenWidth float64, screenHeight float64) {
-	s.moveAsteroidBy(pixel.V(s.velocity.X, s.velocity.Y))
-
-	// go over the edge
-	if s.pos.Y > screenHeight+shipSize {
-		s.moveAsteroidBy(pixel.V(0, -screenHeight-shipSize))
-	}
-	if s.pos.X > screenWidth+shipSize {
-		s.moveAsteroidBy(pixel.V(-screenWidth-shipSize, 0))
-	}
-	if s.pos.Y < 0-shipSize {
-		s.moveAsteroidBy(pixel.V(0, screenHeight+shipSize))
-	}
-	if s.pos.X < 0-shipSize {
-		s.moveAsteroidBy(pixel.V(screenWidth+shipSize, 0))
-	}
-}
-
 func (s *Asteroid) redrawAsteroid() {
 	s.Clear()
 	s.Reset()
@@ -86,20 +58,4 @@ func (s *Asteroid) redrawAsteroid() {
 	s.Color = pixel.RGB(1, 1, 1)
 	s.Push(s.points...)
 	s.Polygon(1)
-}
-
-func (s *Asteroid) Rotate(angle float64) {
-	s.dir = pixel.IM.
-		Rotated(pixel.ZV, angle).
-		Project(s.dir)
-
-	newPoints := s.points[:0]
-	for _, point := range s.points {
-		newP := pixel.IM.
-			Moved(pixel.V(-s.pos.X, -s.pos.Y)).
-			Rotated(pixel.ZV, angle).
-			Moved(s.pos).
-			Project(point)
-		newPoints = append(newPoints, newP)
-	}
 }

@@ -64,10 +64,10 @@ func (w *World) GameLoop() {
 
 func (w *World) processInput() {
 	if w.win.Pressed(pixelgl.KeyLeft) {
-		w.ship.Rotate(math.Pi / 20)
+		w.ship.rotate(math.Pi / 20)
 	}
 	if w.win.Pressed(pixelgl.KeyRight) {
-		w.ship.Rotate(-math.Pi / 20)
+		w.ship.rotate(-math.Pi / 20)
 	}
 	if w.win.Pressed(pixelgl.KeyUp) {
 		w.ship.Thrust()
