@@ -1,7 +1,7 @@
 package game
 
 import (
-	"math"
+	"log"
 	"math/rand"
 	"time"
 
@@ -72,10 +72,10 @@ func (w *world) GameLoop() {
 
 func (w *world) processInput() {
 	if w.win.Pressed(pixelgl.KeyLeft) {
-		w.ship.Rotate(math.Pi / 20)
+		w.ship.RotateLeft()
 	}
 	if w.win.Pressed(pixelgl.KeyRight) {
-		w.ship.Rotate(-math.Pi / 20)
+		w.ship.RotateRight()
 	}
 	if w.win.Pressed(pixelgl.KeyUp) {
 		w.ship.Thrust()
@@ -89,7 +89,7 @@ func (w *world) updateGame() {
 		asteroid.Update(w.width, w.height)
 
 		if w.ship.DetectCollision(asteroid) {
-			//log.Printf("COLLISION DETECTED!!!")
+			log.Printf("COLLISION DETECTED!!!")
 		}
 	}
 }

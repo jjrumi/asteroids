@@ -53,7 +53,3 @@ func NewAsteroid(pos pixel.Vec) Asteroid {
 
 	return asteroid
 }
-
-func (a *asteroid) Update(winWidth float64, winHeight float64) {
-	a.updatePosition(winWidth, winHeight)
-}

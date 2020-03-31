@@ -10,8 +10,6 @@ import (
 type Object interface {
 	Update(winWidth float64, winHeight float64)
 	Render(target pixel.Target)
-
-	collides(o *object) bool
 }
 
 type object struct {
@@ -35,17 +33,7 @@ func (o *object) Render(target pixel.Target) {
 	o.Draw(target)
 }
 
-func (o *object) moveBy(v pixel.Vec) {
-	o.position = o.position.Add(v)
-
-	newPoints := o.points[:0]
-	for _, point := range o.points {
-		np := point.Add(v)
-		newPoints = append(newPoints, np)
-	}
-}
-
-func (o *object) updatePosition(screenWidth float64, screenHeight float64) {
+func (o *object) Update(screenWidth float64, screenHeight float64) {
 	o.moveBy(o.velocity)
 
 	// keep object on the screen - go over the edge
@@ -63,6 +51,16 @@ func (o *object) updatePosition(screenWidth float64, screenHeight float64) {
 	}
 }
 
+func (o *object) moveBy(v pixel.Vec) {
+	o.position = o.position.Add(v)
+
+	newPoints := o.points[:0]
+	for _, point := range o.points {
+		np := point.Add(v)
+		newPoints = append(newPoints, np)
+	}
+}
+
 func (o *object) collides(o2 *object) bool {
 	return o.detectRadiusOverlappingCollision(o2)
 }
@@ -72,8 +70,5 @@ func (o *object) detectRadiusOverlappingCollision(o2 *object) bool {
 	distanceY := o.position.Y - o2.position.Y
 	distance := math.Sqrt(distanceX*distanceX + distanceY*distanceY)
 
-	if distance < (o.boundingRadius + o2.boundingRadius) {
-		return true
-	}
-	return false
+	return distance < (o.boundingRadius + o2.boundingRadius)
 }

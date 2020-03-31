@@ -9,14 +9,16 @@ import (
 
 const shipSize = 20
 const thrust = 0.2
+const rotationAngle = math.Pi / 30
 const shipFriction = 0.99
 
 type Ship interface {
 	Object
 
 	Thrust()
-	Rotate(angle float64)
-	//	Fire()
+	RotateLeft()
+	RotateRight()
+	Fire()
 
 	DetectCollision(a Asteroid) bool
 }
@@ -55,15 +57,21 @@ func (s *ship) Update(winWidth float64, winHeight float64) {
 	s.velocity = s.velocity.Scaled(shipFriction)
 	s.acceleration = pixel.ZV
 
-	s.updatePosition(winWidth, winHeight)
+	s.object.Update(winWidth, winHeight)
 }
 
 func (s *ship) Thrust() {
 	s.acceleration.X += thrust * math.Cos(s.heading)
 	s.acceleration.Y += thrust * math.Sin(s.heading)
 }
+func (s *ship) RotateLeft() {
+	s.rotate(rotationAngle)
+}
+func (s *ship) RotateRight() {
+	s.rotate(-rotationAngle)
+}
 
-func (s *ship) Rotate(angle float64) {
+func (s *ship) rotate(angle float64) {
 	s.heading += angle
 
 	newPoints := s.points[:0]
@@ -78,9 +86,9 @@ func (s *ship) Rotate(angle float64) {
 }
 
 func (s *ship) DetectCollision(a Asteroid) bool {
-	return a.collides(s.object)
+	return s.object.collides(a.(*asteroid).object)
 }
 
 func (s *ship) Fire() {
-
+	panic("todo")
 }
