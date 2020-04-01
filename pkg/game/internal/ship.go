@@ -18,13 +18,7 @@ type Ship interface {
 	Thrust()
 	RotateLeft()
 	RotateRight()
-	Fire()
-
-	DetectCollision(a Asteroid) bool
-}
-
-type ship struct {
-	*object
+	Fire() LaserBolt
 }
 
 func NewShip(pos pixel.Vec) Ship {
@@ -36,7 +30,7 @@ func NewShip(pos pixel.Vec) Ship {
 	}
 
 	ship := &ship{
-		object: &object{
+		polygon: &polygon{
 			IMDraw:         imdraw.New(nil),
 			points:         points,
 			heading:        math.Pi / 2,
@@ -52,12 +46,16 @@ func NewShip(pos pixel.Vec) Ship {
 	return ship
 }
 
+type ship struct {
+	*polygon
+}
+
 func (s *ship) Update(winWidth float64, winHeight float64) {
 	s.velocity = s.velocity.Add(s.acceleration)
 	s.velocity = s.velocity.Scaled(shipFriction)
 	s.acceleration = pixel.ZV
 
-	s.object.Update(winWidth, winHeight)
+	s.polygon.Update(winWidth, winHeight)
 }
 
 func (s *ship) Thrust() {
@@ -85,10 +83,6 @@ func (s *ship) rotate(angle float64) {
 	}
 }
 
-func (s *ship) DetectCollision(a Asteroid) bool {
-	return s.object.collides(a.(*asteroid).object)
-}
-
-func (s *ship) Fire() {
-	panic("todo")
+func (s *ship) Fire() LaserBolt {
+	return NewLaserBolt(s.position, s.heading)
 }

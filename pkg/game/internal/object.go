@@ -12,7 +12,7 @@ type Object interface {
 	Render(target pixel.Target)
 }
 
-type object struct {
+type polygon struct {
 	*imdraw.IMDraw
 	points         []pixel.Vec
 	heading        float64
@@ -22,21 +22,21 @@ type object struct {
 	boundingRadius float64
 }
 
-func (o *object) Render(target pixel.Target) {
+func (o *polygon) Render(target pixel.Target) {
 	o.Clear()
 	o.Reset()
 
 	o.Color = pixel.RGB(1, 1, 1)
 	o.Push(o.points...)
-	o.Polygon(1)
+	o.Polygon(2)
 
 	o.Draw(target)
 }
 
-func (o *object) Update(screenWidth float64, screenHeight float64) {
+func (o *polygon) Update(screenWidth float64, screenHeight float64) {
 	o.moveBy(o.velocity)
 
-	// keep object on the screen - go over the edge
+	// keep polygon on the screen - go over the edge
 	if o.position.Y > screenHeight+shipSize {
 		o.moveBy(pixel.V(0, -screenHeight-shipSize))
 	}
@@ -51,7 +51,7 @@ func (o *object) Update(screenWidth float64, screenHeight float64) {
 	}
 }
 
-func (o *object) moveBy(v pixel.Vec) {
+func (o *polygon) moveBy(v pixel.Vec) {
 	o.position = o.position.Add(v)
 
 	newPoints := o.points[:0]
@@ -61,11 +61,11 @@ func (o *object) moveBy(v pixel.Vec) {
 	}
 }
 
-func (o *object) collides(o2 *object) bool {
+func (o *polygon) collides(o2 *polygon) bool {
 	return o.detectRadiusOverlappingCollision(o2)
 }
 
-func (o *object) detectRadiusOverlappingCollision(o2 *object) bool {
+func (o *polygon) detectRadiusOverlappingCollision(o2 *polygon) bool {
 	distanceX := o.position.X - o2.position.X
 	distanceY := o.position.Y - o2.position.Y
 	distance := math.Sqrt(distanceX*distanceX + distanceY*distanceY)
