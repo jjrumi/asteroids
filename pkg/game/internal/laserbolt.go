@@ -9,31 +9,32 @@ const laserBoltSpeed float64 = 9
 const laserBoltLifeTime float64 = 60
 
 type LaserBoltPool interface {
-	Object
 	Create(bolt LaserBolt)
+	UpdateElements(winWidth float64, winHeight float64)
+	RenderElements(target pixel.Target)
 }
 
 func NewLaserBoltPool() LaserBoltPool {
 	return &laserBoltPool{
-		pool: make([]LaserBolt, 0),
+		pool: make([]*laserBolt, 0),
 	}
 }
 
 type laserBoltPool struct {
-	pool []LaserBolt
+	pool []*laserBolt
 }
 
 func (p *laserBoltPool) Create(bolt LaserBolt) {
-	p.pool = append(p.pool, bolt)
+	p.pool = append(p.pool, bolt.(*laserBolt))
 }
 
-func (p *laserBoltPool) Update(winWidth float64, winHeight float64) {
+func (p *laserBoltPool) UpdateElements(winWidth float64, winHeight float64) {
 	for _, bolt := range p.pool {
 		bolt.Update(winWidth, winHeight)
 	}
 
 	// Get rid of dead bolts:
-	var newPool []LaserBolt
+	var newPool []*laserBolt
 	for _, bolt := range p.pool {
 		if bolt.isAlive() {
 			newPool = append(newPool, bolt)
@@ -42,17 +43,13 @@ func (p *laserBoltPool) Update(winWidth float64, winHeight float64) {
 	p.pool = newPool
 }
 
-func (p *laserBoltPool) Render(target pixel.Target) {
+func (p *laserBoltPool) RenderElements(target pixel.Target) {
 	for _, bolt := range p.pool {
 		bolt.Render(target)
 	}
 }
 
-type LaserBolt interface {
-	Object
-	isAlive() bool
-	destroy()
-}
+type LaserBolt gameComponent
 
 type laserBolt struct {
 	*polygon
@@ -89,7 +86,7 @@ func (l *laserBolt) Update(winWidth float64, winHeight float64) {
 
 	l.lifeLeft--
 
-	l.polygon.Update(winWidth, winHeight)
+	l.polygon.update(winWidth, winHeight)
 }
 
 func (l *laserBolt) Render(target pixel.Target) {
@@ -97,7 +94,7 @@ func (l *laserBolt) Render(target pixel.Target) {
 		return
 	}
 
-	l.polygon.Render(target)
+	l.polygon.render(target)
 }
 
 func (l *laserBolt) isAlive() bool {

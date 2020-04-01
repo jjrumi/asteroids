@@ -7,7 +7,7 @@ import (
 	"github.com/faiface/pixel/imdraw"
 )
 
-type Object interface {
+type gameComponent interface {
 	Update(winWidth float64, winHeight float64)
 	Render(target pixel.Target)
 }
@@ -22,7 +22,7 @@ type polygon struct {
 	boundingRadius float64
 }
 
-func (o *polygon) Render(target pixel.Target) {
+func (o *polygon) render(target pixel.Target) {
 	o.Clear()
 	o.Reset()
 
@@ -33,7 +33,7 @@ func (o *polygon) Render(target pixel.Target) {
 	o.Draw(target)
 }
 
-func (o *polygon) Update(screenWidth float64, screenHeight float64) {
+func (o *polygon) update(screenWidth float64, screenHeight float64) {
 	o.moveBy(o.velocity)
 
 	// keep polygon on the screen - go over the edge

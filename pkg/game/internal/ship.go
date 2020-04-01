@@ -13,7 +13,7 @@ const rotationAngle = math.Pi / 30
 const shipFriction = 0.99
 
 type Ship interface {
-	Object
+	gameComponent
 
 	Thrust()
 	RotateLeft()
@@ -50,12 +50,17 @@ type ship struct {
 	*polygon
 }
 
+
 func (s *ship) Update(winWidth float64, winHeight float64) {
 	s.velocity = s.velocity.Add(s.acceleration)
 	s.velocity = s.velocity.Scaled(shipFriction)
 	s.acceleration = pixel.ZV
 
-	s.polygon.Update(winWidth, winHeight)
+	s.polygon.update(winWidth, winHeight)
+}
+
+func (s *ship) Render(target pixel.Target) {
+	s.polygon.render(target)
 }
 
 func (s *ship) Thrust() {

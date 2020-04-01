@@ -59,7 +59,9 @@ func mustBuildWindow(title string, width float64, height float64) *pixelgl.Windo
 func spawnFlockOfAsteroids(width float64, height float64) internal.AsteroidPool {
 	pool := internal.NewAsteroidPool()
 	for i := 0; i < numAsteroids; i++ {
-		pool.Create(pixel.V(rand.Float64()*width, rand.Float64()*height))
+		pool.Create(
+			internal.NewAsteroid(pixel.V(rand.Float64()*width, rand.Float64()*height)),
+		)
 	}
 
 	return pool
@@ -90,9 +92,9 @@ func (w *world) processInput() {
 
 func (w *world) updateGame() {
 	w.ship.Update(w.width, w.height)
-	w.asteroids.Update(w.width, w.height)
-	w.laserBolts.Update(w.width, w.height)
-	w.blasts.Update(w.width, w.height)
+	w.asteroids.UpdateElements(w.width, w.height)
+	w.laserBolts.UpdateElements(w.width, w.height)
+	w.blasts.UpdateElements(w.width, w.height)
 
 	if w.asteroids.DetectShipCollision(w.ship) {
 		log.Printf("GAME OVER !!")
@@ -108,9 +110,9 @@ func (w *world) render() {
 	w.win.Clear(colornames.Black)
 
 	w.ship.Render(w.win)
-	w.asteroids.Render(w.win)
-	w.laserBolts.Render(w.win)
-	w.blasts.Render(w.win)
+	w.asteroids.RenderElements(w.win)
+	w.laserBolts.RenderElements(w.win)
+	w.blasts.RenderElements(w.win)
 
 	w.win.Update()
 }
