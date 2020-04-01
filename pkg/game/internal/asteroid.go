@@ -25,42 +25,35 @@ type AsteroidPool interface {
 
 func NewAsteroidPool() AsteroidPool {
 	return &asteroidPool{
-		pool: make([]*asteroid, 0),
+		pool: newPool(),
 	}
 }
 
 type asteroidPool struct {
-	pool []*asteroid
+	pool pool
 }
 
 func (p *asteroidPool) Create(a Asteroid) {
-	p.pool = append(p.pool, a.(*asteroid))
+	p.pool.create(a.(*asteroid))
 }
 
 func (p *asteroidPool) UpdateElements(winWidth float64, winHeight float64) {
-	for _, asteroid := range p.pool {
-		asteroid.Update(winWidth, winHeight)
+	for _, e := range p.pool.list() {
+		e.(*asteroid).Update(winWidth, winHeight)
 	}
 
-	// Get rid of dead asteroids:
-	var newPool []*asteroid
-	for _, asteroid := range p.pool {
-		if asteroid.isAlive() {
-			newPool = append(newPool, asteroid)
-		}
-	}
-	p.pool = newPool
+	p.pool.purge()
 }
 
 func (p *asteroidPool) RenderElements(target pixel.Target) {
-	for _, asteroid := range p.pool {
-		asteroid.Render(target)
+	for _, e := range p.pool.list() {
+		e.(*asteroid).Render(target)
 	}
 }
 
 func (p *asteroidPool) DetectShipCollision(s Ship) bool {
-	for _, a := range p.pool {
-		if a.polygon.collides(s.(*ship).polygon) {
+	for _, e := range p.pool.list() {
+		if e.(*asteroid).polygon.collides(s.(*ship).polygon) {
 			return true
 		}
 	}
@@ -70,12 +63,12 @@ func (p *asteroidPool) DetectShipCollision(s Ship) bool {
 func (p *asteroidPool) HandleBoltCollision(boltPool LaserBoltPool) []Asteroid {
 	destroyed := make([]Asteroid, 0)
 	bp := boltPool.(*laserBoltPool)
-	for _, a := range p.pool {
-		for _, b := range bp.pool {
-			if b.isAlive() && a.polygon.collides(b.polygon) {
-				a.destroy()
-				b.destroy()
-				destroyed = append(destroyed, a)
+	for _, a := range p.pool.list() {
+		for _, b := range bp.pool.list() {
+			if b.isAlive() && a.(*asteroid).polygon.collides(b.(*laserBolt).polygon) {
+				a.(*asteroid).destroy()
+				b.(*laserBolt).destroy()
+				destroyed = append(destroyed, a.(*asteroid))
 				continue
 			}
 		}
@@ -148,38 +141,33 @@ type AsteroidBlastPool interface {
 }
 
 func NewAsteroidBlastPool() AsteroidBlastPool {
-	return &asteroidBlastPool{}
+	return &asteroidBlastPool{
+		pool: newPool(),
+	}
 }
 
 type asteroidBlastPool struct {
-	pool []*asteroidBlast
+	pool pool
 }
 
 func (p *asteroidBlastPool) Create(list []Asteroid) {
 	for _, a := range list {
 		blast := NewAsteroidBlast(a)
-		p.pool = append(p.pool, blast.(*asteroidBlast))
+		p.pool.create(blast.(*asteroidBlast))
 	}
 }
 
 func (p *asteroidBlastPool) UpdateElements(winWidth float64, winHeight float64) {
-	for _, blast := range p.pool {
-		blast.Update(winWidth, winHeight)
+	for _, e := range p.pool.list() {
+		e.(*asteroidBlast).Update(winWidth, winHeight)
 	}
 
-	// Get rid of dead bolts:
-	var newPool []*asteroidBlast
-	for _, blast := range p.pool {
-		if blast.isAlive() {
-			newPool = append(newPool, blast)
-		}
-	}
-	p.pool = newPool
+	p.pool.purge()
 }
 
 func (p *asteroidBlastPool) RenderElements(target pixel.Target) {
-	for _, blast := range p.pool {
-		blast.Render(target)
+	for _, e := range p.pool.list() {
+		e.(*asteroidBlast).Render(target)
 	}
 }
 
@@ -189,10 +177,9 @@ func NewAsteroidBlast(a Asteroid) AsteroidBlast {
 	log.Printf("Blast at: %v", a.(*asteroid).polygon.position)
 	return &asteroidBlast{
 		polygon: &polygon{
-			IMDraw: imdraw.New(nil),
-			points: nil, // TODO: points?!
+			IMDraw:   imdraw.New(nil),
+			points:   nil, // TODO: points?!
 			position: a.(*asteroid).polygon.position,
-
 		},
 		lifeLeft: blastLifeTime,
 	}

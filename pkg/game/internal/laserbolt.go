@@ -16,36 +16,29 @@ type LaserBoltPool interface {
 
 func NewLaserBoltPool() LaserBoltPool {
 	return &laserBoltPool{
-		pool: make([]*laserBolt, 0),
+		pool: newPool(),
 	}
 }
 
 type laserBoltPool struct {
-	pool []*laserBolt
+	pool pool
 }
 
 func (p *laserBoltPool) Create(bolt LaserBolt) {
-	p.pool = append(p.pool, bolt.(*laserBolt))
+	p.pool.create(bolt.(*laserBolt))
 }
 
 func (p *laserBoltPool) UpdateElements(winWidth float64, winHeight float64) {
-	for _, bolt := range p.pool {
-		bolt.Update(winWidth, winHeight)
+	for _, e := range p.pool.list() {
+		e.(*laserBolt).Update(winWidth, winHeight)
 	}
 
-	// Get rid of dead bolts:
-	var newPool []*laserBolt
-	for _, bolt := range p.pool {
-		if bolt.isAlive() {
-			newPool = append(newPool, bolt)
-		}
-	}
-	p.pool = newPool
+	p.pool.purge()
 }
 
 func (p *laserBoltPool) RenderElements(target pixel.Target) {
-	for _, bolt := range p.pool {
-		bolt.Render(target)
+	for _, e := range p.pool.list() {
+		e.(*laserBolt).Render(target)
 	}
 }
 
